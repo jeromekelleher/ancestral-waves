@@ -15,6 +15,7 @@ import tempfile
 import argparse
 import subprocess
 import multiprocessing
+
 import numpy as np
 
 # Non essential packages
@@ -23,7 +24,6 @@ try:
     from scipy.integrate import ode
     from scipy.integrate import quad
     from scipy.interpolate import interp1d
-    from scipy.stats import linregress
     from scipy.special import lambertw
     from scipy.special import spence
     from scipy.optimize import curve_fit
@@ -38,8 +38,6 @@ try:
 
     #["#e41a1c", "#377eb8", "#4daf4a", "#984ea3"]
     #['r', 'k', 'c']
-
-
     from matplotlib import pyplot
 except ImportError:
     print("Non simulation-essential package import failed")
@@ -1501,7 +1499,8 @@ def main():
         GeneticWaveParameters2DFigure,
         PedigreeGeneticComparison1DFigure,
         Pedigree1D2DParametersComparisonFigure,
-        AncestralMaterialLinearGenome1DFigure,
+        # TODO fix this bug and reenable.
+        # AncestralMaterialLinearGenome1DFigure,
         PedigreeClineShape1DReplicatesFigure,
         PedigreeClineShape1DMeanFigure,
     ]
