@@ -16,6 +16,7 @@ import argparse
 import subprocess
 import multiprocessing
 
+import psutil
 import numpy as np
 
 # Non essential packages
@@ -56,13 +57,11 @@ def reset_cpu_affinity():
     Numpy does some horrible things with CPU affinity. For some reason,
     numpy sets the CPU affinity to 0 on initialisation, meaning that
     _all_ subprocesses are pinned to CPU0. This makes using
-    multiprocessing pointless. We use taskset to resolve this
-    using taskset.
+    multiprocessing pointless. We use psutil to resolve this.
     """
     num_cpus = multiprocessing.cpu_count()
-    cmd = ["taskset",  "-p", hex(2**num_cpus - 1), str(os.getpid())]
-    with open(os.devnull, "w") as devnull:
-        subprocess.check_call(cmd, stdout=devnull)
+    p = psutil.Process(os.getpid())
+    p.set_cpu_affinity(range(num_cpus))
 
 def dilogarithm(z):
     """
