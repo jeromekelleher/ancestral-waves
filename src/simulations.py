@@ -292,9 +292,9 @@ class WaveSimulator(discsim.Simulator):
         super(WaveSimulator, self).__init__(torus_diameter, simulate_pedigree)
         self.u = u
         self.r = r
+        self.num_parents = 2
         self.event_classes = [ercs.DiscEventClass(u=u, r=r, rate=1)]
         self.sample = self.process_sample()
-        # self.max_occupancy = 1000 # FIXME -- needed this for r < 0.5
         self.max_population_size = self.get_max_population_size()
         self.identifier = None
         self.output_popsize = False
@@ -1275,8 +1275,26 @@ class Pedigree1D2DParametersComparisonFigure(WaveParametersFigure):
 
     def tweak_plot(self, ax_z, ax_w):
         ax_z.set_ylim(1, 30)
+        ax_w.set_ylim(0)
 
-class AncestralMaterialLinearGenome1DFigure(Figure):
+
+class AncestralMaterialFigure(Figure):
+    """
+    Superclass of figures showing ancestral material.
+    """
+    def __init__(self, rho, time):
+        super(AncestralMaterialFigure, self).__init__()
+        self.rho = rho
+        self.generations = [time]
+        self.rho_e = 100
+        self.u = rho_e_to_u(self.rho_e)
+        self.m = 10**5
+        self.simulator = GeneticWaveSimulator1D(self.L, self.u, 1,
+                self.m, self.rho)
+        self.simulator.set_identifier(self.identifier)
+        self.simulators = [self.simulator]
+
+class AncestralMaterialLinearGenome1DFigure(AncestralMaterialFigure):
     """
     Class that processs the data for the figure showing the
     the block size and number of blocks as a function of distance.
@@ -1285,17 +1303,10 @@ class AncestralMaterialLinearGenome1DFigure(Figure):
     default_num_replicates = 100000
 
     def __init__(self):
-        super(AncestralMaterialLinearGenome1DFigure, self).__init__()
-        self.rho_e = 100
-        self.u = rho_e_to_u(self.rho_e)
-        self.m = 10**5
-        self.rho = 1e-3
-        self.simulator = GeneticWaveSimulator1D(self.L, self.u, self.m,
-                self.rho)
-        self.simulator.set_identifier(self.identifier)
+        rho = 1e-3
+        time = 100
+        super(AncestralMaterialLinearGenome1DFigure, self).__init__(rho, time)
         self.simulator.output_ancestral_block_size = True
-        self.simulators = [self.simulator]
-        self.generations = [100]
 
     def process_data(self):
         self.make_data_dir()
@@ -1333,6 +1344,66 @@ class AncestralMaterialLinearGenome1DFigure(Figure):
         pyplot.xlim(0, 40)
         #pyplot.yscale("log")
         pyplot.xlabel("$x$")
+        self.save_plot()
+
+
+class AncestralMaterialFreeRecombination1DFigure(AncestralMaterialFigure):
+    """
+    Class that processs the data for the figure showing the
+    amount of ancestral material as a function of distance along
+    with the variation in this value.
+    """
+    identifier = "1d_ancestral_material_free_recombination"
+
+    def __init__(self):
+        rho = 0.5
+        time = 20
+        super(AncestralMaterialFreeRecombination1DFigure, self).__init__(rho, time)
+        self.simulator.output_ancestral_material_count = True
+
+    def process_data(self):
+        self.make_data_dir()
+        names = ["x", "n", "a_mean", "a_var"]
+        dtype = np.dtype([(n, "float32") for n in names])
+        g = self.generations[0]
+        n_reps = self.simulator.get_n_replicates(g)
+        mean_n = np.mean(n_reps, axis=0)
+        a_reps = self.simulator.get_a_replicates(g)
+        a_mean = np.zeros(int(self.simulator.torus_diameter))
+        a_var = np.zeros(int(self.simulator.torus_diameter))
+        for k, a in enumerate(a_reps):
+            if len(a) > 0:
+                a_mean[k] = np.mean(a)
+                a_var[k] = np.var(a)
+        select = np.logical_and(self.x >= 0, mean_n > 0.0)
+        x = self.x[select]
+        n = mean_n[select]
+        a_mean = a_mean[select]
+        a_var = a_var[select]
+        cols = zip(x, n, a_mean, a_var)
+        data = np.array(cols, dtype=dtype)
+        f = "data/{0}/{1}.npy".format(self.identifier, g)
+        np.save(f, data)
+
+    def plot(self):
+        fig = pyplot.figure()
+        ax1 = fig.add_subplot(111)
+        ax2 = ax1.twinx()
+        g = self.generations[0]
+        f = "data/{0}/{1}.npy".format(self.identifier, g)
+        d = np.load(f)
+        x = d["x"]
+        n = d["n"]
+        a_mean = d["a_mean"]
+        a_var = d["a_var"]
+        l_a_cov, = ax2.plot(x, np.sqrt(a_var) / a_mean, "-")
+        l_a_mean, = ax1.plot(x, a_mean, "-.")
+        l_n, = ax1.plot(x, n, "--")
+        ax2.set_ylabel("Coefficient of variation")
+        ax1.set_xlabel("$x$")
+        pyplot.xlim(0, 20)
+        pyplot.legend([l_a_cov, l_a_mean, l_n],
+                ["$\mathrm{CV}[A(x)]$", "$\\mathbb{E}[A(x)]$", "$n(x)$"])
         self.save_plot()
 
 
@@ -1506,8 +1577,8 @@ def main():
         GeneticWaveParameters2DFigure,
         PedigreeGeneticComparison1DFigure,
         Pedigree1D2DParametersComparisonFigure,
-        # TODO fix this bug and reenable.
-        # AncestralMaterialLinearGenome1DFigure,
+        AncestralMaterialFreeRecombination1DFigure,
+        AncestralMaterialLinearGenome1DFigure,
         PedigreeClineShape1DReplicatesFigure,
         PedigreeClineShape1DMeanFigure,
     ]
