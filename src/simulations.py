@@ -16,7 +16,6 @@ import argparse
 import subprocess
 import multiprocessing
 
-import psutil
 import numpy as np
 
 # Non essential packages
@@ -52,16 +51,6 @@ MODEL_MORAN = "Moran"
 # Used to control the amount of parallelism
 __num_worker_processes = 1
 
-def reset_cpu_affinity():
-    """
-    Numpy does some horrible things with CPU affinity. For some reason,
-    numpy sets the CPU affinity to 0 on initialisation, meaning that
-    _all_ subprocesses are pinned to CPU0. This makes using
-    multiprocessing pointless. We use psutil to resolve this.
-    """
-    num_cpus = multiprocessing.cpu_count()
-    p = psutil.Process(os.getpid())
-    p.set_cpu_affinity(range(num_cpus))
 
 def dilogarithm(z):
     """
@@ -160,7 +149,6 @@ def subprocess_initialiser():
     Function called when a subprocess is started.
     """
     # print("Starting process ", os.getpid())
-    reset_cpu_affinity()
 
 def run_replicates(sim, generations, num_replicates):
     """
@@ -1511,8 +1499,6 @@ def run_list(keys):
         print("\t", k)
 
 def main():
-    reset_cpu_affinity()
-
     plots = [
         PedigreeIntegralEquation1DFigure,
         PedigreeNumericsComparison1DFigure,
