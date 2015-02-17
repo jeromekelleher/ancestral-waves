@@ -294,7 +294,7 @@ class WaveSimulator(discsim.Simulator):
         self.r = r
         self.event_classes = [ercs.DiscEventClass(u=u, r=r, rate=1)]
         self.sample = self.process_sample()
-        self.max_occupancy = 1000 # FIXME -- needed this for r < 0.5
+        # self.max_occupancy = 1000 # FIXME -- needed this for r < 0.5
         self.max_population_size = self.get_max_population_size()
         self.identifier = None
         self.output_popsize = False
@@ -701,6 +701,7 @@ class Figure(object):
     def __init__(self, L=1000):
         self.dimension = 1
         self.L = L
+        self.x = np.linspace(0, L - 1, L) - L / 2
 
     def get_K(self, u):
         """
@@ -1414,12 +1415,11 @@ class PedigreeClineShape1DReplicatesFigure(PedigreeClineShape1DFigure):
     identifier = "1d_pedigree_cline_shape_replicates"
 
     def plot(self):
-
-        f = "data/{0}/x.npy".format(self.data_identifier)
-        x = np.load(f)
+        f = "data/{0}/summary.npy".format(self.data_identifier)
+        d = np.load(f)
+        x = d["x"]
         fig, ax = pyplot.subplots(1, 3, sharey=True)
         fig.set_size_inches(16, 4)
-
         for j, s in enumerate(self.simulators):
             f = "data/{0}.npy".format(s.identifier)
             P = np.load(f)
@@ -1441,7 +1441,6 @@ class PedigreeClineShape1DMeanFigure(PedigreeClineShape1DFigure):
     identifier = "1d_pedigree_cline_shape_mean"
 
     def plot(self):
-
         f = "data/{0}/summary.npy".format(self.data_identifier)
         d = np.load(f)
         x = d["x"]
