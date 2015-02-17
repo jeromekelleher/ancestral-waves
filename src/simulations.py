@@ -51,6 +51,19 @@ MODEL_MORAN = "Moran"
 # Used to control the amount of parallelism
 __num_worker_processes = 1
 
+def reset_cpu_affinity():
+    """
+    Numpy does some horrible things with CPU affinity. For some reason,
+    numpy sets the CPU affinity to 0 on initialisation, meaning that
+    _all_ subprocesses are pinned to CPU0. This makes using
+    multiprocessing pointless. We use taskset to resolve this
+    using taskset.
+    """
+    num_cpus = multiprocessing.cpu_count()
+    cmd = ["taskset",  "-p", hex(2**num_cpus - 1), str(os.getpid())]
+    with open(os.devnull, "w") as devnull:
+        subprocess.check_call(cmd, stdout=devnull)
+
 def dilogarithm(z):
     """
     Returns the dilogarithm function Li2(z)
@@ -143,6 +156,13 @@ def subprocess_worker(args):
     sim.run_replicate(generations)
     sim.reset()
 
+def subprocess_initialiser():
+    """
+    Function called when a subprocess is started.
+    """
+    # print("Starting process ", os.getpid())
+    reset_cpu_affinity()
+
 def run_replicates(sim, generations, num_replicates):
     """
     Runs the specified wave simulator over the specified set of times
@@ -155,8 +175,10 @@ def run_replicates(sim, generations, num_replicates):
             for j in range(num_replicates)]
     n = __num_worker_processes
     if n > 1:
-        workers = multiprocessing.Pool(n)
+        workers = multiprocessing.Pool(n, subprocess_initialiser)
         workers.map(subprocess_worker, args)
+        workers.close()
+        workers.join()
     else:
         for arg in args:
             #print("processing", arg)
@@ -1484,13 +1506,14 @@ def run_process(cls, args):
 def run_plot(cls, args):
     f = cls()
     f.plot()
-
 def run_list(keys):
     print("Available plots:")
     for k in keys:
         print("\t", k)
 
 def main():
+    reset_cpu_affinity()
+
     plots = [
         PedigreeIntegralEquation1DFigure,
         PedigreeNumericsComparison1DFigure,
