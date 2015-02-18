@@ -1,0 +1,6 @@
+discsim
+ercs
+fipy
+matplotlib
+numpy
+scipy

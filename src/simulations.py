@@ -18,32 +18,26 @@ import multiprocessing
 
 import numpy as np
 
-# Non essential packages
-try:
-    import fipy
-    from scipy.integrate import ode
-    from scipy.integrate import quad
-    from scipy.interpolate import interp1d
-    from scipy.special import lambertw
-    from scipy.special import spence
-    from scipy.optimize import curve_fit
-    from scipy.optimize import brentq
-    import matplotlib
-    # Force matplotlib to not use any Xwindows backend.
-    matplotlib.use('Agg')
-    # Set the color cycle for plots using ColorBrewer
-    # http://colorbrewer2.org/?type=qualitative&scheme=Set1&n=5
-    matplotlib.rcParams['axes.color_cycle'] = [
-        "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]
-
-    #["#e41a1c", "#377eb8", "#4daf4a", "#984ea3"]
-    #['r', 'k', 'c']
-    from matplotlib import pyplot
-except ImportError:
-    print("Non simulation-essential package import failed")
-
 import ercs
 import discsim
+import fipy
+
+from scipy.integrate import ode
+from scipy.integrate import quad
+from scipy.interpolate import interp1d
+from scipy.special import lambertw
+from scipy.special import spence
+from scipy.optimize import curve_fit
+from scipy.optimize import brentq
+
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+# Set the color cycle for plots using ColorBrewer
+# http://colorbrewer2.org/?type=qualitative&scheme=Set1&n=5
+matplotlib.rcParams['axes.color_cycle'] = [
+    "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]
+from matplotlib import pyplot
 
 MODEL_WRIGHT_FISHER = "Wright-Fisher"
 MODEL_MORAN = "Moran"
