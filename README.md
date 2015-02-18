@@ -95,9 +95,7 @@ have been installed. Similarly, OSX should work, but it has not been tested.
 
 To compile the C programs, we need [libconfig](http://www.hyperrealm.com/libconfig/)
 and [GSL](http://www.gnu.org/software/gsl/). Both of these are commonly available
-in package managers.
-
-On Debian/Ubuntu, for example, we can use
+in package managers.  On Debian/Ubuntu, for example, we can use
 ```sh
 $ sudo apt-get install libgsl0-dev libconfig-dev
 ```
@@ -117,7 +115,7 @@ manager.
 
 To run the simulations on a fresh Debian Wheezy install, do the following:
 ```sh
-$ sudo apt-get install build-essential git libgsl0-dev libconfig-dev python-dev python-scipy python-pip python-matplotlib
+$ sudo apt-get install build-essential git libgsl0-dev libconfig-dev python-dev python-scipy python-pip python-matplotlib python-sparse
 $ git clone https://github.com/jeromekelleher/ancestral-waves.git
 $ cd ancestral-waves
 $ pip install ez_setup --user
@@ -126,4 +124,4 @@ $ make
 ```
 (We need to install ``ez_setup`` separately because FiPy assumes 
 it is installed.) The simulations can now be run and analysed using 
-the commants given at the top of the page.
+the commands given at the top of the page.
