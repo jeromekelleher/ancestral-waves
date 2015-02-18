@@ -1,6 +1,23 @@
 /*
- * Simulations of the ancestral wave in 1D for a discrete deme Wright-Fisher
- * model.
+ * Copyright (C) 2015 Jerome Kelleher <jerome.kelleher@well.ox.ac.uk>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * Simulations of the ancestral wave in 1D for discrete deme Wright-Fisher
+ * and Moran models.
  */
 #include <assert.h>
 #include <stdio.h>
@@ -18,7 +35,7 @@
 #define MODEL_MORAN 1
 
 /* From version 1.4, libconfig has swapped long for int as the integer type.
- * The LIBCONFIG_VER_MAJOR macro was introduced at version 1.4 also, so this 
+ * The LIBCONFIG_VER_MAJOR macro was introduced at version 1.4 also, so this
  * should be a safe test.
  */
 #ifdef LIBCONFIG_VER_MAJOR
@@ -43,8 +60,8 @@ typedef struct {
     gsl_rng *rng;
     unsigned int time;
     unsigned int buffer;
-    unsigned int *population[2]; 
-    unsigned int *count[2]; 
+    unsigned int *population[2];
+    unsigned int *count[2];
 } sim_t;
 
 void *
@@ -59,21 +76,21 @@ xmalloc(size_t size)
 }
 
 /*
- * Parses the specified string into a long and assigns the value into 
- * the specified pointer. Returns EINVAL if the string cannot be 
- * converted to double or if min <= x <= max does not hold; returns 0 if 
+ * Parses the specified string into a long and assigns the value into
+ * the specified pointer. Returns EINVAL if the string cannot be
+ * converted to double or if min <= x <= max does not hold; returns 0 if
  * the value is converted successfully.
  */
-int 
-parse_long(const char *str, long *value, const long min, 
+int
+parse_long(const char *str, long *value, const long min,
         const long max)
 {
     int ret = 0;
     long x;
-    char *tail; 
+    char *tail;
     x = strtol(str, &tail, 10);
     if (tail[0] != '\0') {
-        ret = EINVAL; 
+        ret = EINVAL;
     } else if (min > x || max < x) {
         ret = EINVAL;
     } else {
@@ -82,7 +99,7 @@ parse_long(const char *str, long *value, const long min,
     return ret;
 }
 
-void 
+void
 fatal_error(const char *msg, ...)
 {
     va_list argp;
@@ -94,7 +111,7 @@ fatal_error(const char *msg, ...)
     exit(EXIT_FAILURE);
 }
 
-static void 
+static void
 sim_alloc(sim_t *self)
 {
     unsigned int k;
@@ -119,7 +136,7 @@ sim_free(sim_t *self)
     gsl_rng_free(self->rng);
 }
 
-void 
+void
 sim_print_count(sim_t *self, FILE *f)
 {
     unsigned int deme;
@@ -129,22 +146,22 @@ sim_print_count(sim_t *self, FILE *f)
     fprintf(f, "\n");
 }
 
-void 
+void
 sim_print_state(sim_t *self)
 {
     unsigned int deme, ind, k, s;
     unsigned int genetic_material = 0;
     printf("state @ t = %d\n", self->time);
     for (deme = 0; deme < self->L; deme++) {
-        printf("%03d: ", deme); 
+        printf("%03d: ", deme);
         s = 0;
         for (ind = 0; ind < self->N; ind++) {
             k = deme * self->N + ind;
             printf("%4d ", self->population[self->buffer][k]);
-            s += self->population[self->buffer][k] != 0; 
-            genetic_material += self->population[self->buffer][k]; 
+            s += self->population[self->buffer][k] != 0;
+            genetic_material += self->population[self->buffer][k];
         }
-        printf("\t%d\n", s); 
+        printf("\t%d\n", s);
         assert(s == self->count[self->buffer][deme]);
     }
     if (self->num_loci != 0) {
@@ -155,7 +172,7 @@ sim_print_state(sim_t *self)
 /*
  * Sets up the initial conditions for the simulation.
  */
-static void 
+static void
 sim_initialise(sim_t *self)
 {
     unsigned initial_value = self->num_loci == 0 ? 1 : self->num_loci;
@@ -170,7 +187,7 @@ sim_initialise(sim_t *self)
 /*
  * Implements a single generation in the Wright-Fisher model.
  */
-static void 
+static void
 sim_wf_generation(sim_t *self)
 {
     int source_deme, dest_deme, source_ind, dest_ind, offset, source, dest;
@@ -209,11 +226,11 @@ sim_wf_generation(sim_t *self)
                         dest_ind = gsl_rng_uniform_int(self->rng, self->N);
                         /* Now update the destination individual */
                         dest = dest_deme * self->N + dest_ind;
-                        if (self->num_loci == 0) { 
+                        if (self->num_loci == 0) {
                             /* Pedigree ancestry */
-                            new_count[dest_deme] += 
+                            new_count[dest_deme] +=
                                     (new_population[dest] ^ population[source]);
-                            new_population[dest] |= population[source]; 
+                            new_population[dest] |= population[source];
                         } else {
                             /* Genetic ancestry */
                             if (parent == 0) {
@@ -231,20 +248,20 @@ sim_wf_generation(sim_t *self)
                 }
             }
         }
-    }   
+    }
     self->buffer = (self->buffer + 1) % 2;
 }
 
 /*
  * Implements a single event in the Moran model. In this model, we choose a deme uniformly
- * at random and a individual uniformly at random from this deme. We then choose two 
- * individual according to the migration rules, and these are assinged any ancestral 
+ * at random and a individual uniformly at random from this deme. We then choose two
+ * individual according to the migration rules, and these are assinged any ancestral
  * material that the individual carries.
  */
-static void 
+static void
 sim_moran_event(sim_t *self)
 {
-    int source_deme, source_ind, dest_deme, dest_ind, source, dest, offset, 
+    int source_deme, source_ind, dest_deme, dest_ind, source, dest, offset,
             parent;
     unsigned int *population = self->population[self->buffer];
     unsigned int *count = self->count[self->buffer];
@@ -279,7 +296,7 @@ sim_moran_event(sim_t *self)
             /* Now update the destination individual */
             dest = dest_deme * self->N + dest_ind;
             //printf("dest = %d\t%d\n", dest_deme, dest_ind);
-            if (self->num_loci == 0) { 
+            if (self->num_loci == 0) {
                 /* Pedigree ancestry */
                 count[dest_deme] += (population[dest] ^ am);
                 population[dest] |= am;
@@ -303,10 +320,10 @@ sim_moran_event(sim_t *self)
 
 static void
 sim_output_count(sim_t *self)
-{   
+{
     char filename[8192];
     FILE *f = NULL;
-    snprintf(filename, 8192, "%s%d_%ld.dat", self->output_prefix, self->time, 
+    snprintf(filename, 8192, "%s%d_%ld.dat", self->output_prefix, self->time,
             self->random_seed);
     f = fopen(filename, "w");
     if (f == NULL) {
@@ -330,7 +347,7 @@ sim_run(sim_t *self)
             sim_print_count(self, stdout);
         }
         if (self->verbosity >= 2) {
-            sim_print_state(self); 
+            sim_print_state(self);
         }
         if (self->model == MODEL_WF) {
             sim_wf_generation(self);
@@ -350,12 +367,12 @@ sim_read_config(sim_t *self, const char *filename)
     libconfig_int tmp;
     const char *str;
     size_t s;
-    config_t *config = xmalloc(sizeof(config_t)); 
+    config_t *config = xmalloc(sizeof(config_t));
     config_init(config);
     err = config_read_file(config, filename);
     if (err == CONFIG_FALSE) {
-        fatal_error("configuration error:%s at line %d in file %s\n", 
-                config_error_text(config), config_error_line(config), 
+        fatal_error("configuration error:%s at line %d in file %s\n",
+                config_error_text(config), config_error_line(config),
                 filename);
     }
     if (config_lookup_int(config, "verbosity", &tmp) == CONFIG_FALSE) {
@@ -386,7 +403,7 @@ sim_read_config(sim_t *self, const char *filename)
         fatal_error("output_frequency is a required parameter");
     }
     self->output_frequency = tmp;
-    if (config_lookup_float(config, "migration_rate", 
+    if (config_lookup_float(config, "migration_rate",
             &self->m) == CONFIG_FALSE) {
         fatal_error("migration_rate is a required parameter");
     }
@@ -410,7 +427,7 @@ sim_read_config(sim_t *self, const char *filename)
     free(config);
 }
 
-int 
+int
 main(int argc, char** argv)
 {
     sim_t *self = xmalloc(sizeof(sim_t));
@@ -419,7 +436,7 @@ main(int argc, char** argv)
     }
     if (parse_long(argv[2], &self->random_seed, 0, LONG_MAX) != 0) {
         fatal_error("cannot parse seed '%s'", argv[1]);
-    }   
+    }
     sim_read_config(self, argv[1]);
     sim_alloc(self);
     sim_initialise(self);

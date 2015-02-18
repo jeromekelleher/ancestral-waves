@@ -1,6 +1,24 @@
+#
+# Copyright (C) 2015 Jerome Kelleher <jerome.kelleher@well.ox.ac.uk>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 """
-Module to run the simulations and collect results.
+Runs simulations for ancestral waves in 1D for the continuum, Wright-Fisher
+and Moran models and in 2D for the continuum model.
 """
+
 from __future__ import print_function
 from __future__ import division
 
@@ -16,12 +34,10 @@ import argparse
 import subprocess
 import multiprocessing
 
-import numpy as np
-
 import ercs
-import discsim
 import fipy
-
+import discsim
+import numpy as np
 from scipy.integrate import ode
 from scipy.integrate import quad
 from scipy.interpolate import interp1d
@@ -29,7 +45,6 @@ from scipy.special import lambertw
 from scipy.special import spence
 from scipy.optimize import curve_fit
 from scipy.optimize import brentq
-
 import matplotlib
 # Force matplotlib to not use any Xwindows backend.
 matplotlib.use('Agg')
@@ -44,7 +59,6 @@ MODEL_MORAN = "Moran"
 
 # Used to control the amount of parallelism
 __num_worker_processes = 1
-
 
 def dilogarithm(z):
     """
@@ -1192,14 +1206,6 @@ class PedigreeGeneticComparison1DFigure(Figure):
                 select = np.logical_and(self.x >= 0, mean_n > 0.0)
                 x = self.x[select]
                 n = mean_n[select]
-                """
-                z, s = self.estimate_mean_wave_parameters(self.x, n_reps,
-                        sim.u)
-                y, n = self.get_centred_mean_wave(n_reps)
-                x = z + y
-                select = np.logical_and(x >= 0, x < 50)
-                cols = zip(x[select], n[select])
-                """
                 cols = zip(x, n)
                 data = np.array(cols, dtype=dtype)
                 f = "data/{0}/{1}_{2}.npy".format(self.identifier,
@@ -1333,10 +1339,8 @@ class AncestralMaterialLinearGenome1DFigure(AncestralMaterialFigure):
         pyplot.plot(x, d["nb_mean"], label="num blocks", color="b")
         pyplot.legend()
         pyplot.axhline(1, color="black", linestyle="--")
-        #pyplot.ylim(1e-1, 1e3)
         pyplot.ylim(0, 15)
         pyplot.xlim(0, 40)
-        #pyplot.yscale("log")
         pyplot.xlabel("$x$")
         self.save_plot()
 
@@ -1579,7 +1583,7 @@ def main():
     key_map = dict([(c.identifier, c) for c in plots])
     num_cpus = multiprocessing.cpu_count()
     parser = argparse.ArgumentParser(description=
-            "Run simulations and process data files.")
+            "Run simulations, process data files and generate plots.")
     subparsers = parser.add_subparsers()
     simulate_parser = subparsers.add_parser('simulate')
     simulate_parser.add_argument('-p', help="number of processors",
