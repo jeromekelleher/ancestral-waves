@@ -19,7 +19,8 @@ $ sudo apt-get install libgsl0-dev libconfig-dev
 
 To run the simulations on a fresh Debian wheezy install, do the following:
 ```sh
-$ sudo apt-get install build-essential git libgsl0-dev libconfig-dev python-dev python-scipy
+$ sudo apt-get install build-essential git libgsl0-dev libconfig-dev \
+python-dev python-scipy python-pip
 $ git clone https://github.com/jeromekelleher/ancestral-waves.git
 $ cd ancestral-waves
 $ pip install -r requirements.txt --user
