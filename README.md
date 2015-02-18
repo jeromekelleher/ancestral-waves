@@ -117,12 +117,13 @@ manager.
 
 To run the simulations on a fresh Debian Wheezy install, do the following:
 ```sh
-$ sudo apt-get install build-essential git libgsl0-dev libconfig-dev \
-python-dev python-scipy python-pip
+$ sudo apt-get install build-essential git libgsl0-dev libconfig-dev python-dev python-scipy python-pip python-matplotlib
 $ git clone https://github.com/jeromekelleher/ancestral-waves.git
 $ cd ancestral-waves
+$ pip install ez_setup --user
 $ pip install -r requirements.txt --user
 $ make
 ```
-The simulations can now be run and analysed using the commants given at
-the top of the page.
+(We need to install ``ez_setup`` separately because FiPy assumes 
+it is installed.) The simulations can now be run and analysed using 
+the commants given at the top of the page.
