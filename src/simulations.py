@@ -34,6 +34,11 @@ import argparse
 import subprocess
 import multiprocessing
 
+# We only support Python 2.7
+if sys.version_info[:2] != (2, 7):
+    print("Error: Python 2.7 is required to run this script!")
+    sys.exit(1)
+
 import ercs
 import fipy
 import discsim
