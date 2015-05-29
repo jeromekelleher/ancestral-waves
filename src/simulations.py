@@ -1424,7 +1424,6 @@ class PedigreeClineShape1DFigure(Figure):
         self.generations = [g]
         m = 0.5
         self.sigma = np.sqrt(m)
-        gap = 5
         self.width_cutoff = 10
         rho_e = 100
         self.simulators = []
@@ -1500,7 +1499,7 @@ class PedigreeClineShape1DReplicatesFigure(PedigreeClineShape1DFigure):
             for p in P:
                 ax[j].plot(x, p)
             p = np.mean(P, axis=0)
-            ax[j].plot(x, p, "--", linewidth=5, color="black")
+            ax[j].plot(x, p, ".-", markersize=8, color="black")
             title = s.identifier.split("/")[1].title()
             ax[j].set_title(title)
         ax[0].set_ylim(-0.05, 1.2)
@@ -1522,6 +1521,9 @@ class PedigreeClineShape1DMeanFigure(PedigreeClineShape1DFigure):
         lines = ["-", "--", ":", "-."]
         for m, l in zip(models, lines):
             p = d[m]
+            # Replace anything > 1 with 1. This happens in the WF and Moran
+            # models where we can have densities > 1.
+            p[p > 1] = 1
             pyplot.plot(x, 1 / (1 / p - 1), l, label=m)
 
         # Get the Fisher-Wave solution
@@ -1548,6 +1550,7 @@ class PedigreeClineShape1DMeanFigure(PedigreeClineShape1DFigure):
         pyplot.xlim(-10, 10)
         pyplot.ylim(1e-3, 1e3)
         pyplot.ylabel("$\\frac{1}{\\frac{1}{p} -1}$")
+        pyplot.xlabel("$x$")
         pyplot.legend()
         self.save_plot()
 
