@@ -1,5 +1,6 @@
 discsim
 ercs
+ez_setup
 fipy >= 3.1
 matplotlib >= 1.1.1rc2
 numpy >= 1.6.2
