@@ -1502,8 +1502,10 @@ class PedigreeClineShape1DReplicatesFigure(PedigreeClineShape1DFigure):
             ax[j].plot(x, p, ".-", markersize=8, color="black")
             title = s.identifier.split("/")[1].title()
             ax[j].set_title(title)
+            ax[j].set_xlabel("$x$")
         ax[0].set_ylim(-0.05, 1.2)
         ax[0].set_ylabel("$p$")
+        fig.subplots_adjust(bottom=0.15)
         self.save_plot()
 
 class PedigreeClineShape1DMeanFigure(PedigreeClineShape1DFigure):
