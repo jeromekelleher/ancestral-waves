@@ -975,7 +975,7 @@ class PedigreeNumericsComparison1DFigure(Figure):
                     num=3)[1]
             j = (np.abs(n_numerical - v)).argmin()
             xy = x[j], n_numerical[j]
-            ax.annotate("$g={0}$".format(g), xy=xy,  xycoords='data',
+            ax.annotate("$t={0}$".format(g), xy=xy,  xycoords='data',
                     xytext=(5, 0), textcoords='offset points')
         pyplot.yscale("log")
         pyplot.ylabel("$n(x)$")
@@ -1230,7 +1230,7 @@ class PedigreeGeneticComparison1DFigure(Figure):
             lp, = ax.plot(x, n)
             j = (np.abs(n- max(n) / 2)).argmin()
             xy = x[j], n[j]
-            ax.annotate("$g={0}$".format(g), xy=xy,  xycoords='data',
+            ax.annotate("$t={0}$".format(g), xy=xy,  xycoords='data',
                     xytext=(5, 0), textcoords='offset points')
             sim = self.genetic_simulator
             f = "data/{0}/{1}_{2}.npy".format(self.identifier,
